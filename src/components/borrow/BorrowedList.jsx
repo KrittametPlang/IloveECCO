@@ -147,26 +147,6 @@ const BorrowedList = () => {
             </div>
           )}
         </div>
-
-        {/* Returned Section */}
-        <div className="p-6 md:p-8 bg-gray-50 border-t border-gray-100">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-            <span className="w-3 h-3 bg-green-500 rounded-full"></span>
-            คืนแล้ว
-          </h3>
-          
-          {returnedRecords.length === 0 ? (
-            <div className="text-center py-8 text-gray-400">
-              <p>ยังไม่มีรายการที่คืนแล้ว</p>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {returnedRecords.map((record) => (
-                <RecordCard key={record.id} record={record} isReturned />
-              ))}
-            </div>
-          )}
-        </div>
       </div>
 
       {/* Return Confirmation Modal */}

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useSupabaseShoes } from '../hooks/useSupabaseShoes';
+import { useSupabaseBorrow } from '../hooks/useSupabaseBorrow';
 import ShoeForm from '../components/admin/ShoeForm';
 import { 
   LogOut, 
@@ -13,19 +14,28 @@ import {
   RefreshCw,
   Search,
   Loader2,
-  AlertCircle
+  AlertCircle,
+  User,
+  Phone,
+  Calendar,
+  MapPin,
+  ClipboardList
 } from 'lucide-react';
 
 const AdminPage = () => {
   const { logout } = useAuth();
   const navigate = useNavigate();
   const { shoes, loading, error, fetchShoes, addShoe, updateShoe, deleteShoe } = useSupabaseShoes();
+  const { records, loading: borrowLoading, fetchRecords, getReturnedRecords } = useSupabaseBorrow();
   
+  const [activeTab, setActiveTab] = useState('shoes');
   const [showForm, setShowForm] = useState(false);
   const [editingShoe, setEditingShoe] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [deleteConfirm, setDeleteConfirm] = useState(null);
   const [actionLoading, setActionLoading] = useState(false);
+
+  const returnedRecords = getReturnedRecords();
 
   const handleLogout = async () => {
     await logout();
@@ -121,7 +131,34 @@ const AdminPage = () => {
           </div>
         )}
 
-        {/* Action Bar */}
+        {/* Tab Navigation */}
+        <div className="flex gap-2 mb-6">
+          <button
+            onClick={() => setActiveTab('shoes')}
+            className={`flex items-center gap-2 px-5 py-2.5 rounded-lg font-medium transition-all ${
+              activeTab === 'shoes'
+                ? 'bg-black text-white shadow-lg'
+                : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'
+            }`}
+          >
+            <Package size={18} />
+            จัดการรองเท้า
+          </button>
+          <button
+            onClick={() => setActiveTab('returned')}
+            className={`flex items-center gap-2 px-5 py-2.5 rounded-lg font-medium transition-all ${
+              activeTab === 'returned'
+                ? 'bg-black text-white shadow-lg'
+                : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'
+            }`}
+          >
+            <ClipboardList size={18} />
+            รายการคืนแล้ว ({returnedRecords.length})
+          </button>
+        </div>
+
+        {activeTab === 'shoes' && (
+        <>        {/* Action Bar */}
         <div className="flex flex-col sm:flex-row gap-4 mb-6">
           {/* Search */}
           <div className="relative flex-1">
@@ -270,6 +307,50 @@ const AdminPage = () => {
             </div>
           )}
         </div>
+        </>
+        )}
+
+        {/* Returned Items Section */}
+        {activeTab === 'returned' && (
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <div className="p-6 border-b border-gray-100 bg-gradient-to-r from-green-50 to-emerald-50">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+                    <ClipboardList size={20} />
+                    รายการที่คืนแล้ว
+                  </h3>
+                  <p className="text-sm text-gray-500 mt-1">ทั้งหมด {returnedRecords.length} รายการ</p>
+                </div>
+                <button
+                  onClick={fetchRecords}
+                  disabled={borrowLoading}
+                  className="p-2 hover:bg-white rounded-lg transition-colors"
+                >
+                  <RefreshCw size={20} className={borrowLoading ? 'animate-spin text-gray-400' : 'text-gray-500'} />
+                </button>
+              </div>
+            </div>
+
+            {borrowLoading ? (
+              <div className="flex items-center justify-center py-12">
+                <Loader2 className="animate-spin text-gray-400" size={32} />
+                <span className="ml-3 text-gray-500">กำลังโหลด...</span>
+              </div>
+            ) : returnedRecords.length === 0 ? (
+              <div className="text-center py-12 text-gray-400">
+                <ClipboardList size={48} className="mx-auto mb-3 opacity-50" />
+                <p>ยังไม่มีรายการที่คืนแล้ว</p>
+              </div>
+            ) : (
+              <div className="p-6 space-y-4">
+                {returnedRecords.map((record) => (
+                  <ReturnedRecordCard key={record.id} record={record} />
+                ))}
+              </div>
+            )}
+          </div>
+        )}
       </main>
 
       {/* Shoe Form Modal */}
@@ -321,6 +402,88 @@ const AdminPage = () => {
           </div>
         </div>
       )}
+    </div>
+  );
+};
+
+// Format date to Thai locale
+const formatDate = (dateString) => {
+  if (!dateString) return '-';
+  const date = new Date(dateString);
+  return date.toLocaleDateString('th-TH', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+};
+
+// Returned Record Card Component
+const ReturnedRecordCard = ({ record }) => {
+  const totalItems = record.items?.reduce((sum, item) => sum + (item.quantity || 0), 0) || 0;
+
+  return (
+    <div className="rounded-xl border bg-gray-50 border-gray-200 overflow-hidden">
+      {/* Borrower Info Header */}
+      <div className="p-4 bg-gray-200">
+        <div className="flex flex-wrap items-center gap-4">
+          <div className="flex items-center gap-2">
+            <User size={16} />
+            <span className="font-semibold">{record.borrower?.fullname || 'ไม่ระบุชื่อ'}</span>
+          </div>
+          <div className="flex items-center gap-2 text-sm opacity-80">
+            <span>{record.borrower?.department || '-'}</span>
+          </div>
+          <div className="flex items-center gap-2 text-sm">
+            <Phone size={14} />
+            <span>{record.borrower?.phone || '-'}</span>
+          </div>
+        </div>
+        <div className="flex flex-wrap items-center gap-4 mt-2 text-sm opacity-80">
+          <div className="flex items-center gap-1">
+            <Calendar size={14} />
+            <span>ยืม: {formatDate(record.borrowDate)}</span>
+          </div>
+          {record.returnDate && (
+            <div className="flex items-center gap-1 text-green-700">
+              <Calendar size={14} />
+              <span>คืน: {formatDate(record.returnDate)}</span>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Items List */}
+      <div className="p-4">
+        <p className="text-xs text-gray-500 mb-2">รายการที่ยืม ({totalItems} ชิ้น)</p>
+        {record.items && record.items.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+            {record.items.map((item, index) => (
+              <div key={index} className="flex items-center gap-3 p-2 bg-white rounded-lg border border-gray-100">
+                {item.image ? (
+                  <img 
+                    src={item.image} 
+                    alt={item.name}
+                    className="w-10 h-10 object-cover rounded-md border border-gray-200"
+                  />
+                ) : (
+                  <div className="w-10 h-10 bg-gray-200 rounded-md flex items-center justify-center">
+                    <Package size={16} className="text-gray-400" />
+                  </div>
+                )}
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-gray-800 truncate">{item.name || 'ไม่ระบุชื่อ'}</p>
+                  <p className="text-xs text-gray-500">{item.code || '-'}</p>
+                </div>
+                <div className="text-right">
+                  <span className="font-bold text-gray-600">x{item.quantity || 1}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-gray-400 text-sm">ไม่มีรายการ</p>
+        )}
+      </div>
     </div>
   );
 };
