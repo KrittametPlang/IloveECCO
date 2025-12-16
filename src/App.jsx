@@ -72,7 +72,7 @@ const HomePage = () => {
             }`}
           >
             <PlusCircle size={18} />
-            ยืมของ
+            ยืมรองเท้าตัวอย่าง
           </button>
           <button
             onClick={() => setActiveTab('list')}

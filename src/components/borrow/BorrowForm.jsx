@@ -21,7 +21,7 @@ const BorrowForm = ({
       <div className="p-6 md:p-8 border-b border-gray-100">
         <h2 className="text-lg font-bold flex items-center gap-2 mb-4">
           <Package size={20} className="text-gray-400" />
-          ค้นหาและเลือกของที่ต้องการยืม
+          ค้นหาและเลือกรองเท้าที่ต้องการยืม
         </h2>
         
         {errors.items && (

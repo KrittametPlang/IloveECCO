@@ -11,14 +11,14 @@ const SuccessView = ({ formData, selectedItems, onReset }) => {
           <CheckCircle size={40} />
         </div>
         <h2 className="text-2xl font-bold mb-2 text-black">บันทึกข้อมูลสำเร็จ!</h2>
-        <p className="text-gray-500 mb-8">ระบบได้บันทึกการยืมของคุณเรียบร้อยแล้ว</p>
+        <p className="text-gray-500 mb-8">ระบบได้บันทึกการยืมรองเท้าตัวอย่างของคุณเรียบร้อยแล้ว</p>
         
         <div className="bg-gray-50 rounded-lg p-4 text-left mb-6 border border-gray-200">
           <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3">สรุปรายการ</h3>
           <p className="font-bold text-lg mb-1">{formData.fullname}</p>
           <p className="text-sm text-gray-600 mb-4">แผนก: {formData.department}</p>
           <div className="border-t border-gray-200 pt-3">
-            <p className="text-sm font-medium mb-3">อุปกรณ์ที่ยืม ({totalItems} ชิ้น):</p>
+            <p className="text-sm font-medium mb-3">รองเท้าตัวอย่างที่ยืม ({totalItems} ชิ้น):</p>
             <div className="space-y-3">
               {selectedItems.map(item => (
                 <div key={item.id} className="flex items-center gap-3 bg-white p-3 rounded-lg border border-gray-100">

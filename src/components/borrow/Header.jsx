@@ -49,9 +49,9 @@ const Header = () => {
           <ClipboardList className="text-black" size={32} />
         </div>
         <h1 className="text-3xl font-bold tracking-tight text-black mb-2">
-          โปรเจ็คยืมคืน<span className="text-gray-400">เด็กฝึกงาน</span>
+          ยืม-คืน<span className="text-gray-400"> รองเท้าตัวอย่าง</span>
         </h1>
-        <p className="text-gray-500 text-sm">กรอกข้อมูลให้ครบถ้วนเพื่อทำการเบิก-ยืมอุปกรณ์</p>
+        <p className="text-gray-500 text-sm">กรอกข้อมูลให้ครบถ้วนเพื่อทำการเบิก-ยืมรองเท้าตัวอย่าง</p>
       </div>
     </header>
   );

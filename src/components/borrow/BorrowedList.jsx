@@ -161,7 +161,7 @@ const BorrowedList = () => {
                     <RotateCcw size={20} className="text-blue-600" />
                   </div>
                   <div>
-                    <h3 className="text-lg font-bold text-gray-800">ยืนยันการคืนของ</h3>
+                    <h3 className="text-lg font-bold text-gray-800">ยืนยันการคืนรองเท้าตัวอย่าง</h3>
                     <p className="text-sm text-gray-500">กรุณากรอกเบอร์โทรเพื่อยืนยัน</p>
                   </div>
                 </div>
@@ -179,7 +179,7 @@ const BorrowedList = () => {
               {returnSuccess ? (
                 <div className="text-center py-4">
                   <CheckCircle2 size={48} className="mx-auto text-green-500 mb-3" />
-                  <p className="text-lg font-semibold text-green-700">คืนของสำเร็จ!</p>
+                  <p className="text-lg font-semibold text-green-700">คืนรองเท้าตัวอย่างสำเร็จ!</p>
                 </div>
               ) : (
                 <>
@@ -241,7 +241,7 @@ const BorrowedList = () => {
                       ) : (
                         <>
                           <CheckCircle2 size={18} />
-                          ยืนยันคืนของ
+                          ยืนยันคืนรองเท้าตัวอย่าง
                         </>
                       )}
                     </button>
@@ -336,7 +336,7 @@ const RecordCard = ({ record, isReturned = false, onReturn }) => {
               className="w-full px-4 py-3 bg-gradient-to-r from-emerald-500 to-green-600 text-white rounded-xl font-medium hover:from-emerald-600 hover:to-green-700 transition-all flex items-center justify-center gap-2 shadow-lg shadow-green-200"
             >
               <RotateCcw size={18} />
-              คืนของ
+              คืนรองเท้าตัวอย่าง
             </button>
           </div>
         )}

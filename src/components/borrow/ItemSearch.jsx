@@ -81,7 +81,7 @@ const ItemSearch = ({ selectedItems, onAddItem }) => {
       <div className="flex flex-col md:flex-row gap-3">
         <div className="flex-1">
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            รหัสสินค้า
+            รหัสรองเท้าตัวอย่าง
           </label>
           <div className="relative">
             <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
@@ -157,7 +157,7 @@ const ItemSearch = ({ selectedItems, onAddItem }) => {
       {/* Available Items Grid */}
       <div className="bg-blue-50 border border-blue-100 rounded-lg p-4">
         <p className="text-sm font-medium text-blue-800 mb-3">
-          รายการสินค้าที่มีในระบบ {loading && <Loader2 size={14} className="inline animate-spin ml-1" />}:
+          รายการรองเท้าตัวอย่างที่มีในระบบ {loading && <Loader2 size={14} className="inline animate-spin ml-1" />}:
         </p>
         {loading ? (
           <div className="flex items-center justify-center py-8">
