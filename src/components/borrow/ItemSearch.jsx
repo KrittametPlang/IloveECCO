@@ -31,7 +31,7 @@ const ItemSearch = ({ selectedItems, onAddItem }) => {
 
   const handleAddItem = () => {
     if (!foundItem) {
-      setError('ไม่พบรหัสสิ่งของนี้ในระบบ');
+      setError('รหัสนี้ถูกยืมไปแล้วก่อนหน้า');
       return;
     }
 
