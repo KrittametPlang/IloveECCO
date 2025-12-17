@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { User, Phone, Calendar, MapPin, Package, Loader2, RefreshCw, RotateCcw, X, CheckCircle2, AlertCircle } from 'lucide-react';
+import React, { useState, useMemo } from 'react';
+import { User, Phone, Calendar, MapPin, Package, Loader2, RefreshCw, RotateCcw, X, CheckCircle2, AlertCircle, Search } from 'lucide-react';
 import { useSupabaseBorrow } from '../../hooks/useSupabaseBorrow';
 
 // Format date to Thai locale
@@ -24,8 +24,24 @@ const BorrowedList = () => {
   const [returnError, setReturnError] = useState('');
   const [returnSuccess, setReturnSuccess] = useState(false);
   
+  // Search state
+  const [searchQuery, setSearchQuery] = useState('');
+  
   const borrowedRecords = getBorrowedRecords();
   const returnedRecords = getReturnedRecords();
+  
+  // Filter borrowed records by shoe model number
+  const filteredBorrowedRecords = useMemo(() => {
+    if (!searchQuery.trim()) return borrowedRecords;
+    
+    const query = searchQuery.trim().toLowerCase();
+    return borrowedRecords.filter(record => 
+      record.items?.some(item => 
+        item.model?.toLowerCase().includes(query) ||
+        item.code?.toLowerCase().includes(query)
+      )
+    );
+  }, [borrowedRecords, searchQuery]);
 
   // Handle return button click
   const handleReturnClick = (record) => {
@@ -114,6 +130,33 @@ const BorrowedList = () => {
               ข้อมูลจาก Supabase
             </span>
           </div>
+          
+          {/* Search Bar */}
+          <div className="mt-4">
+            <div className="relative">
+              <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="ค้นหารหัสรองเท้า (เช่น 822383)"
+                className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all bg-white text-sm"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                >
+                  <X size={16} />
+                </button>
+              )}
+            </div>
+            {searchQuery && (
+              <p className="text-xs text-gray-500 mt-2">
+                พบ {filteredBorrowedRecords.length} รายการที่ตรงกับ "{searchQuery}"
+              </p>
+            )}
+          </div>
         </div>
 
         {/* Error Alert */}
@@ -130,18 +173,19 @@ const BorrowedList = () => {
             กำลังยืมอยู่
           </h3>
           
-          {borrowedRecords.length === 0 ? (
+          {filteredBorrowedRecords.length === 0 ? (
             <div className="text-center py-8 text-gray-500">
               <Package size={40} className="mx-auto mb-2 opacity-50" />
-              <p>ยังไม่มีรายการที่กำลังยืม</p>
+              <p>{searchQuery ? 'ไม่พบรายการที่ตรงกับการค้นหา' : 'ยังไม่มีรายการที่กำลังยืม'}</p>
             </div>
           ) : (
             <div className="space-y-4">
-              {borrowedRecords.map((record) => (
+              {filteredBorrowedRecords.map((record) => (
                 <RecordCard 
                   key={record.id} 
                   record={record} 
                   onReturn={() => handleReturnClick(record)}
+                  searchQuery={searchQuery}
                 />
               ))}
             </div>
