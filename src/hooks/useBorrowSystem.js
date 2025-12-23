@@ -1,14 +1,29 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useSupabaseBorrow } from './useSupabaseBorrow';
+import { useAuth } from '../context/AuthContext';
 
 export const useBorrowSystem = () => {
   const { createBorrowRecord } = useSupabaseBorrow();
+  const { user } = useAuth();
   
+  // ใช้ข้อมูลจาก session ที่ login
   const [formData, setFormData] = useState({
     fullname: '',
     department: '',
     phone: ''
   });
+
+  // Auto-fill จาก user session
+  useEffect(() => {
+    if (user) {
+      setFormData({
+        fullname: user.fullname || '',
+        department: user.department || '',
+        phone: user.phone || ''
+      });
+    }
+  }, [user]);
+
   // selectedItems now stores objects: { id, code, name, icon, quantity }
   const [selectedItems, setSelectedItems] = useState([]);
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -121,7 +136,16 @@ export const useBorrowSystem = () => {
   };
 
   const resetForm = () => {
-    setFormData({ fullname: '', department: '', phone: '' });
+    // Reset แต่ยังคงข้อมูล user จาก session
+    if (user) {
+      setFormData({
+        fullname: user.fullname || '',
+        department: user.department || '',
+        phone: user.phone || ''
+      });
+    } else {
+      setFormData({ fullname: '', department: '', phone: '' });
+    }
     setSelectedItems([]);
     setIsSubmitted(false);
     setIsLoading(false);

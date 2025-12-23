@@ -5,7 +5,9 @@ const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
+  const [userType, setUserType] = useState(null); // 'admin' | 'user' | null
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isUserAuthenticated, setIsUserAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -16,6 +18,7 @@ export const AuthProvider = ({ children }) => {
         if (session?.user) {
           setUser(session.user);
           setIsAuthenticated(true);
+          setUserType('admin');
         }
       } catch (error) {
         console.error('Error checking session:', error);
@@ -32,9 +35,14 @@ export const AuthProvider = ({ children }) => {
         if (session?.user) {
           setUser(session.user);
           setIsAuthenticated(true);
+          setUserType('admin');
         } else {
-          setUser(null);
-          setIsAuthenticated(false);
+          // ไม่ clear user session ถ้าเป็น demo หรือ user login
+          if (!localStorage.getItem('demo_session') && !localStorage.getItem('user_session')) {
+            setUser(null);
+            setIsAuthenticated(false);
+            setUserType(null);
+          }
         }
         setIsLoading(false);
       }
@@ -45,7 +53,7 @@ export const AuthProvider = ({ children }) => {
     };
   }, []);
 
-  // Login ด้วย email/password
+  // Login ด้วย email/password (สำหรับ Supabase Auth)
   const login = async (email, password) => {
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
@@ -59,30 +67,68 @@ export const AuthProvider = ({ children }) => {
 
       setUser(data.user);
       setIsAuthenticated(true);
+      setUserType('admin');
       return { success: true };
     } catch (error) {
       return { success: false, error: error.message };
     }
   };
 
-  // Login แบบ Demo (ไม่ต้องใช้ Supabase Auth - สำหรับทดสอบ)
+  // Login แบบ Demo สำหรับ Admin
   const loginDemo = (username, password) => {
     if (username === 'admin' && password === 'admin123') {
-      // สร้าง mock user สำหรับ demo
       const mockUser = {
         id: 'demo-admin',
         email: 'admin@demo.com',
-        role: 'admin'
+        role: 'admin',
+        fullname: 'ผู้ดูแลระบบ'
       };
       setUser(mockUser);
       setIsAuthenticated(true);
+      setUserType('admin');
       localStorage.setItem('demo_session', JSON.stringify(mockUser));
       return { success: true };
     }
     return { success: false, error: 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง' };
   };
 
-  // Signup
+  // Login สำหรับ User (ตรวจสอบจาก users table)
+  const loginUser = async (username, password) => {
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .select('*')
+        .eq('username', username)
+        .eq('password', password)
+        .eq('is_active', true)
+        .single();
+
+      if (error || !data) {
+        return { success: false, error: 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง' };
+      }
+
+      const userInfo = {
+        id: data.id,
+        username: data.username,
+        fullname: data.fullname,
+        department: data.department,
+        phone: data.phone,
+        email: data.email,
+        role: 'user'
+      };
+
+      setUser(userInfo);
+      setIsUserAuthenticated(true);
+      setUserType('user');
+      localStorage.setItem('user_session', JSON.stringify(userInfo));
+      return { success: true };
+    } catch (error) {
+      console.error('Error logging in user:', error);
+      return { success: false, error: 'เกิดข้อผิดพลาดในการเข้าสู่ระบบ' };
+    }
+  };
+
+  // Signup (สำหรับ Supabase Auth)
   const signUp = async (email, password, metadata = {}) => {
     try {
       const { data, error } = await supabase.auth.signUp({
@@ -106,32 +152,66 @@ export const AuthProvider = ({ children }) => {
   // Logout
   const logout = async () => {
     try {
+      // ถ้าเป็น user session
+      if (localStorage.getItem('user_session')) {
+        localStorage.removeItem('user_session');
+        setUser(null);
+        setIsUserAuthenticated(false);
+        setUserType(null);
+        return;
+      }
+
       // ถ้าเป็น demo session
       if (localStorage.getItem('demo_session')) {
         localStorage.removeItem('demo_session');
         setUser(null);
         setIsAuthenticated(false);
+        setUserType(null);
         return;
       }
 
       await supabase.auth.signOut();
       setUser(null);
       setIsAuthenticated(false);
+      setUserType(null);
     } catch (error) {
       console.error('Error signing out:', error);
     }
   };
 
-  // ตรวจสอบ demo session เมื่อ mount
+  // Logout สำหรับ User เท่านั้น
+  const logoutUser = () => {
+    localStorage.removeItem('user_session');
+    setUser(null);
+    setIsUserAuthenticated(false);
+    setUserType(null);
+  };
+
+  // ตรวจสอบ sessions เมื่อ mount
   useEffect(() => {
+    // ตรวจสอบ demo session (admin)
     const demoSession = localStorage.getItem('demo_session');
     if (demoSession && !user) {
       try {
         const demoUser = JSON.parse(demoSession);
         setUser(demoUser);
         setIsAuthenticated(true);
+        setUserType('admin');
       } catch (e) {
         localStorage.removeItem('demo_session');
+      }
+    }
+
+    // ตรวจสอบ user session
+    const userSession = localStorage.getItem('user_session');
+    if (userSession && !user) {
+      try {
+        const userData = JSON.parse(userSession);
+        setUser(userData);
+        setIsUserAuthenticated(true);
+        setUserType('user');
+      } catch (e) {
+        localStorage.removeItem('user_session');
       }
     }
   }, []);
@@ -139,12 +219,16 @@ export const AuthProvider = ({ children }) => {
   return (
     <AuthContext.Provider value={{ 
       user,
-      isAuthenticated, 
+      userType,
+      isAuthenticated,
+      isUserAuthenticated,
       isLoading, 
       login,
       loginDemo,
+      loginUser,
       signUp,
-      logout 
+      logout,
+      logoutUser
     }}>
       {children}
     </AuthContext.Provider>

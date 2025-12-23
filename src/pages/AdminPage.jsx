@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { useSupabaseShoes } from '../hooks/useSupabaseShoes';
 import { useSupabaseBorrow } from '../hooks/useSupabaseBorrow';
 import ShoeForm from '../components/admin/ShoeForm';
+import UserManagement from '../components/admin/UserManagement';
 import { 
   LogOut, 
   Plus, 
@@ -19,7 +20,8 @@ import {
   Phone,
   Calendar,
   MapPin,
-  ClipboardList
+  ClipboardList,
+  Users
 } from 'lucide-react';
 
 const AdminPage = () => {
@@ -154,6 +156,17 @@ const AdminPage = () => {
           >
             <ClipboardList size={18} />
             รายการคืนแล้ว ({returnedRecords.length})
+          </button>
+          <button
+            onClick={() => setActiveTab('users')}
+            className={`flex items-center gap-2 px-5 py-2.5 rounded-lg font-medium transition-all ${
+              activeTab === 'users'
+                ? 'bg-black text-white shadow-lg'
+                : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'
+            }`}
+          >
+            <Users size={18} />
+            จัดการผู้ใช้
           </button>
         </div>
 
@@ -350,6 +363,11 @@ const AdminPage = () => {
               </div>
             )}
           </div>
+        )}
+
+        {/* Users Management Section */}
+        {activeTab === 'users' && (
+          <UserManagement />
         )}
       </main>
 

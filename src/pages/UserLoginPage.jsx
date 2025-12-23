@@ -1,15 +1,15 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Lock, User, LogIn, ArrowLeft } from 'lucide-react';
+import { Lock, User, LogIn, Settings } from 'lucide-react';
 
-const LoginPage = () => {
+const UserLoginPage = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   
-  const { loginDemo } = useAuth();
+  const { loginUser } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -17,13 +17,10 @@ const LoginPage = () => {
     setError('');
     setIsLoading(true);
 
-    // Simulate loading
-    await new Promise(resolve => setTimeout(resolve, 500));
-
-    const result = loginDemo(username, password);
+    const result = await loginUser(username, password);
     
     if (result.success) {
-      navigate('/admin');
+      navigate('/');
     } else {
       setError(result.error);
     }
@@ -34,24 +31,15 @@ const LoginPage = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        {/* Back Button */}
-        <button
-          onClick={() => navigate('/')}
-          className="flex items-center gap-2 text-gray-400 hover:text-white mb-8 transition-colors"
-        >
-          <ArrowLeft size={20} />
-          <span>กลับหน้าหลัก</span>
-        </button>
-
         {/* Login Card */}
         <div className="bg-white/10 backdrop-blur-xl rounded-2xl p-8 shadow-2xl border border-white/20">
           {/* Header */}
           <div className="text-center mb-8">
             <div className="inline-flex items-center justify-center w-16 h-16 bg-white/20 rounded-xl mb-4">
-              <Lock className="text-white" size={32} />
+              <User className="text-white" size={32} />
             </div>
-            <h1 className="text-2xl font-bold text-white">Admin Login</h1>
-            <p className="text-gray-400 text-sm mt-2">เข้าสู่ระบบเพื่อจัดการรายการรองเท้า</p>
+            <h1 className="text-2xl font-bold text-white">ระบบยืมรองเท้า</h1>
+            <p className="text-gray-400 text-sm mt-2">กรุณาเข้าสู่ระบบเพื่อดำเนินการยืม</p>
           </div>
 
           {/* Error Message */}
@@ -113,11 +101,15 @@ const LoginPage = () => {
             </button>
           </form>
 
-          {/* Demo Credentials */}
+          {/* Admin Login Link */}
           <div className="mt-6 pt-6 border-t border-white/10">
-            {/* <p className="text-gray-500 text-xs text-center">
-              Demo: username <span className="text-gray-400">admin</span> / password <span className="text-gray-400">admin123</span>
-            </p> */}
+            <button
+              onClick={() => navigate('/login')}
+              className="w-full flex items-center justify-center gap-2 text-gray-400 hover:text-white py-2 transition-colors"
+            >
+              <Settings size={16} />
+              <span className="text-sm">เข้าสู่ระบบสำหรับ Admin</span>
+            </button>
           </div>
         </div>
       </div>
@@ -125,4 +117,4 @@ const LoginPage = () => {
   );
 };
 
-export default LoginPage;
+export default UserLoginPage;
